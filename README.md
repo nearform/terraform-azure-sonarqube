@@ -34,6 +34,7 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 | `subnet_private_endpoints_id`     | The ID of the subnet used for private endpoints         | `string`| N/A             | yes      |
 | `subnet_appgw_id`                 | The ID of the subnet used for the Application Gateway   | `string`| N/A             | yes      |
 | `subnet_pgsql_id`                 | The ID of the subnet used for the PostgreSQL database   | `string`| N/A             | yes      || `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
+| `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
 | `kv_admins`                               | List of user IDs with admin privileges over Key Vault               | `list(string)`| N/A          | yes      |
 | `storage_account`                         | Configuration for the Azure Storage Account                         | `object`     | See below     | no       |
 | `sonar_db_server`                         | The name of the SonarQube database server                           | `string`     | `"sonardbserver"` | no       |
