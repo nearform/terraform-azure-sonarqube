@@ -244,8 +244,8 @@ resource "azurerm_postgresql_flexible_server" "sonarqube" {
   administrator_login           = var.sonar_db_user
   administrator_password        = azurerm_key_vault_secret.sonarqube_db_password.value
   storage_mb                    = 32768
-  storage_tier                  = "P10"
-  sku_name                      = "GP_Standard_D2s_v3"
+  storage_tier                  = var.sonar_db_storage_type
+  sku_name                      = var.sonar_db_instance_class
   zone                          = "1"
   tags                          = var.tags
 

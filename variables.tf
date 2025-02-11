@@ -120,15 +120,15 @@ variable "sonar_db_server" {
 }
 
 variable "sonar_db_instance_class" {
-  description = "The database instance class used for SonarQube (e.g., db.t4g.micro for AWS RDS)."
+  description = "The database instance class used for SonarQube."
   type        = string
-  default     = "db.t4g.micro"
+  default     = "GP_Standard_D2s_v3"
 }
 
 variable "sonar_db_storage_type" {
-  description = "The storage type used for the SonarQube database server (e.g., gp2 for AWS EBS-backed storage)."
+  description = "The storage type used for the SonarQube database server."
   type        = string
-  default     = "gp2"
+  default     = "P10"
 }
 
 variable "sonar_db_name" {
