@@ -31,11 +31,9 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 | `resource_group_name`                     | The name of the Azure resource group                                | `string`     | N/A           | yes      |
 | `admins_allowed_ips`                      | Mapping of admin users to their allowed public IPs                  | `map(string)`| `{}`          | no       |
 | `vnet_id`                                 | ID of the Virtual Network                                           | `string`     | N/A           | yes      |
-| `vnet_address_space`                      | Address space for the virtual network                               | `list(string)`| N/A          | yes      |
-| `subnet_address_range_private_endpoints`  | Address range for private endpoints subnet                          | `list(string)`| N/A          | yes      |
-| `subnet_address_range_containers`         | Address range for the containerized applications subnet             | `list(string)`| N/A          | yes      |
-| `subnet_address_range_appgw`              | Address range for the Application Gateway subnet                    | `list(string)`| N/A          | yes      |
-| `subnet_address_range_pgsql`              | Address range for the PostgreSQL database subnet                    | `list(string)`| N/A          | yes      |
+| `subnet_private_endpoints_id`     | The ID of the subnet used for private endpoints         | `string`| N/A             | yes      |
+| `subnet_appgw_id`                 | The ID of the subnet used for the Application Gateway   | `string`| N/A             | yes      |
+| `subnet_pgsql_id`                 | The ID of the subnet used for the PostgreSQL database   | `string`| N/A             | yes      || `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
 | `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
 | `kv_admins`                               | List of user IDs with admin privileges over Key Vault               | `list(string)`| N/A          | yes      |
 | `storage_account`                         | Configuration for the Azure Storage Account                         | `object`     | See below     | no       |

@@ -33,30 +33,19 @@ variable "vnet_id" {
   description = "ID of the VNet"
   type        = string
 }
-
-variable "vnet_address_space" {
-  description = "CIDR block(s) defining the address space for the virtual network."
-  type        = list(string)
+variable "subnet_private_endpoints_id" {
+  description = "The ID of the subnet used for private endpoints."
+  type        = string
 }
 
-variable "subnet_address_range_private_endpoints" {
-  description = "CIDR block(s) defining the address range for private endpoints subnet."
-  type        = list(string)
+variable "subnet_appgw_id" {
+  description = "The ID of the subnet used for the Application Gateway."
+  type        = string
 }
 
-variable "subnet_address_range_containers" {
-  description = "CIDR block(s) defining the address range for the containerized applications subnet."
-  type        = list(string)
-}
-
-variable "subnet_address_range_appgw" {
-  description = "CIDR block(s) defining the address range for the Application Gateway subnet."
-  type        = list(string)
-}
-
-variable "subnet_address_range_pgsql" {
-  description = "CIDR block(s) defining the address range for the PostgreSQL database subnet."
-  type        = list(string)
+variable "subnet_pgsql_id" {
+  description = "The ID of the subnet used for the PostgreSQL database."
+  type        = string
 }
 
 # Key Vault
