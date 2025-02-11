@@ -29,6 +29,11 @@ variable "admins_allowed_ips" {
 }
 
 # Networking
+variable "vnet_id" {
+  description = "ID of the VNet"
+  type        = string
+}
+
 variable "vnet_address_space" {
   description = "CIDR block(s) defining the address space for the virtual network."
   type        = list(string)
@@ -69,6 +74,11 @@ variable "keyvault" {
     purge_protection       = true
     secret_expiration_days = 3650 // 10 years
   }
+}
+
+variable "kv_admins" {
+  description = "A list of user IDs with admin privileges over the Azure Key Vault."
+  type        = list(string)
 }
 
 # Storage Accounts
