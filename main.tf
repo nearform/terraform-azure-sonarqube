@@ -115,7 +115,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "keyvault_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.keyvault_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ################################################################################
@@ -260,7 +259,7 @@ resource "azurerm_postgresql_flexible_server_firewall_rule" "pgsql_allow_user_ip
 }
 
 # Private endpoint
-resource "azurerm_private_endpoint" "sonarqube_pe" {
+resource "azurerm_private_endpoint" "pgsqlserver_pe" {
   name                          = "${var.name}pgsqlserver-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
@@ -277,7 +276,7 @@ resource "azurerm_private_endpoint" "sonarqube_pe" {
 
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sonarqube_dns.id]
+    private_dns_zone_ids = [azurerm_private_dns_zone.pgsql_server_dns.id]
   }
 }
 
@@ -544,7 +543,7 @@ resource "azurerm_role_assignment" "sonarqube2acr" {
 ################################################################################
 # Public IP Adress
 ################################################################################
-resource "azurerm_public_ip" "publicip_appgw" {
+resource "azurerm_public_ip" "appgw" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -602,7 +601,7 @@ resource "azurerm_application_gateway" "appgw" {
 
   frontend_ip_configuration {
     name                 = local.frontend_ip_configuration_name
-    public_ip_address_id = azurerm_public_ip.publicip_appgw.id
+    public_ip_address_id = azurerm_public_ip.appgw.id
   }
 
   frontend_port {

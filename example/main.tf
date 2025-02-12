@@ -129,11 +129,6 @@ resource "azurerm_subnet_network_security_group_association" "nsg_privateendpoin
   network_security_group_id = azurerm_network_security_group.nsg_web.id
 }
 
-resource "azurerm_subnet_network_security_group_association" "nsg_containers" {
-  subnet_id                 = azurerm_subnet.subnet_containers.id
-  network_security_group_id = azurerm_network_security_group.nsg_web.id
-}
-
 resource "azurerm_subnet_network_security_group_association" "nsg_appgw" {
   subnet_id                 = azurerm_subnet.subnet_appgw.id
   network_security_group_id = azurerm_network_security_group.nsg_appgw.id
