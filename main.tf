@@ -66,7 +66,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "pgsql_server_vnetlink"
   private_dns_zone_name = azurerm_private_dns_zone.pgsql_server_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ## Storage Account
@@ -76,7 +75,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_blob_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.sa_blob_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ### File
@@ -85,7 +83,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_file_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.sa_file_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ### Web
@@ -94,7 +91,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_web_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.sa_web_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ### Queue
@@ -103,7 +99,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_queue_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.sa_queue_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ### Table
@@ -112,7 +107,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_table_vnetlink" {
   private_dns_zone_name = azurerm_private_dns_zone.sa_table_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
-  depends_on            = [azurerm_subnet.subnet_privateendpoints]
 }
 
 ## Key Vault
@@ -192,7 +186,7 @@ resource "azurerm_private_endpoint" "keyvault_pe" {
   name                          = "${var.name}keyvault-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}keyvault-pe-nic"
   tags                          = var.tags
 
@@ -236,18 +230,20 @@ resource "azurerm_key_vault_secret" "sonarqube_db_password" {
 # PostgreSQL Flexible Server
 ################################################################################
 resource "azurerm_postgresql_flexible_server" "sonarqube" {
-  name                          = var.sonar_db_server
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  version                       = "16"
-  public_network_access_enabled = true
-  administrator_login           = var.sonar_db_user
-  administrator_password        = azurerm_key_vault_secret.sonarqube_db_password.value
-  storage_mb                    = 32768
-  storage_tier                  = var.sonar_db_storage_type
-  sku_name                      = var.sonar_db_instance_class
-  zone                          = "1"
-  tags                          = var.tags
+  name                   = var.sonar_db_server
+  location               = var.location
+  resource_group_name    = var.resource_group_name
+  version                = "16"
+  delegated_subnet_id    = var.subnet_pgsql_id
+  private_dns_zone_id    = azurerm_private_dns_zone.pgsql_server_dns.id
+  administrator_login    = var.sonar_db_user
+  administrator_password = azurerm_key_vault_secret.sonarqube_db_password.value
+  storage_mb             = 32768
+  storage_tier           = var.sonar_db_storage_type
+  sku_name               = var.sonar_db_instance_class
+  zone                   = "1"
+  tags                   = var.tags
+  depends_on             = [azurerm_private_dns_zone_virtual_network_link.pgsql_server_vnetlink]
 
   authentication {
     password_auth_enabled = true
@@ -268,7 +264,7 @@ resource "azurerm_private_endpoint" "sonarqube_pe" {
   name                          = "${var.name}pgsqlserver-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}pgsqlserver-pe-nic"
   tags                          = var.tags
 
@@ -334,7 +330,7 @@ resource "azurerm_private_endpoint" "sa_blob_pe" {
   name                          = "${var.name}sablob-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}sablob-pe-nic"
   tags                          = var.tags
 
@@ -356,7 +352,7 @@ resource "azurerm_private_endpoint" "sa_file_pe" {
   name                          = "${var.name}safile-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}safile-pe-nic"
   tags                          = var.tags
 
@@ -378,7 +374,7 @@ resource "azurerm_private_endpoint" "sa_web_pe" {
   name                          = "${var.name}saweb-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}saweb-pe-nic"
   tags                          = var.tags
 
@@ -400,7 +396,7 @@ resource "azurerm_private_endpoint" "sa_queue_pe" {
   name                          = "${var.name}saqueue-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}saqueue-pe-nic"
   tags                          = var.tags
 
@@ -422,7 +418,7 @@ resource "azurerm_private_endpoint" "sa_table_pe" {
   name                          = "${var.name}satable-pe"
   resource_group_name           = var.resource_group_name
   location                      = var.location
-  subnet_id                     = azurerm_subnet.subnet_privateendpoints.id
+  subnet_id                     = var.subnet_private_endpoints_id
   custom_network_interface_name = "${var.name}satable-pe-nic"
   tags                          = var.tags
 
@@ -601,7 +597,7 @@ resource "azurerm_application_gateway" "appgw" {
 
   gateway_ip_configuration {
     name      = local.gateway_ip_configuration_name
-    subnet_id = azurerm_subnet.subnet_appgw.id
+    subnet_id = var.subnet_appgw_id
   }
 
   frontend_ip_configuration {
