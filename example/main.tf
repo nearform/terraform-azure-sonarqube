@@ -1,7 +1,7 @@
 # Resource Group
 resource "azurerm_resource_group" "rg" {
   name     = "sonarqube"
-  location = "value"
+  location = local.location
 }
 
 # Virtual Networks
@@ -141,7 +141,6 @@ resource "azurerm_subnet_network_security_group_association" "nsg_pgsql" {
 
 provider "azurerm" {
   features {}
-  subscription_id = "XXX"
 }
 
 module "sonarqube" {
