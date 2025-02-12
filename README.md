@@ -153,3 +153,5 @@ We welcome contributions to improve this Terraform module! Here’s how you can 
 For larger changes or new features, please open an issue first to discuss the approach before starting work on it.
 
 Thanks for helping improve this project!
+
+[![banner](https://raw.githubusercontent.com/nearform/.github/refs/heads/master/assets/os-banner-green.svg)](https://www.nearform.com/contact/?utm_source=open-source&utm_medium=banner&utm_campaign=os-project-pages)
