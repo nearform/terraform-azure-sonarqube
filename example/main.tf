@@ -154,9 +154,9 @@ module "sonarqube" {
   sonar_image_tag             = "10.7.0-community"
   location                    = local.location
   resource_group_name         = azurerm_resource_group.rg.name
-  vnet_id                     = "value"
-  subnet_private_endpoints_id = "value"
-  subnet_pgsql_id             = "value"
-  subnet_appgw_id             = "value"
-  kv_admins                   = "value"
+  vnet_id                     = azurerm_virtual_network.vnet.id
+  subnet_private_endpoints_id = azurerm_subnet.subnet_privateendpoints.id
+  subnet_pgsql_id             = azurerm_subnet.subnet_pgsql.id
+  subnet_appgw_id             = azurerm_subnet.subnet_appgw.id
+  kv_admins                   = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
 }
