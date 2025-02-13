@@ -307,6 +307,9 @@ resource "azurerm_storage_account" "sonarqube" {
       var.subnet_aci_id,
       var.subnet_private_endpoints_id
     ]
+    # private_link_access {
+    #   endpoint_resource_id = azurerm_container_group.sonarqube.id
+    # }
   }
 
   blob_properties {
@@ -612,18 +615,17 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   backend_address_pool {
-    name  = local.backend_address_pool_name
-    fqdns = [azurerm_container_group.sonarqube.fqdn]
+    name         = local.backend_address_pool_name
+    ip_addresses = [azurerm_container_group.sonarqube.ip_address]
   }
 
   backend_http_settings {
     name                                = local.backend_http_setting_name
     cookie_based_affinity               = "Disabled"
-    pick_host_name_from_backend_address = true
-    port                                = 443
-    protocol                            = "Https"
+    pick_host_name_from_backend_address = false
+    port                                = 9000
+    protocol                            = "Http"
     request_timeout                     = 20
-    trusted_root_certificate_names      = []
   }
 
   http_listener {
