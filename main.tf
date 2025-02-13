@@ -143,9 +143,9 @@ resource "null_resource" "sonar_image_pull_tag_push" {
   provisioner "local-exec" {
     command = <<EOT
       az acr login --name ${azurerm_container_registry.sonarqube.name}
-      docker pull sonarqube:${var.sonar_image_tag}
+      docker pull sonarqube:${var.sonar_image_tag} --platform=linux/arm64
       docker tag sonarqube:${var.sonar_image_tag} ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
-      docker push ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
+      docker push ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag} --platform=linux/arm64
       docker rmi sonarqube:${var.sonar_image_tag} ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
     EOT
   }
