@@ -276,11 +276,6 @@ resource "azurerm_postgresql_flexible_server_database" "sonarqube" {
   server_id = azurerm_postgresql_flexible_server.sonarqube.id
   collation = "en_US.utf8"
   charset   = "utf8"
-
-  # prevent the possibility of accidental data loss
-  lifecycle {
-    prevent_destroy = true
-  }
 }
 
 ################################################################################
@@ -307,9 +302,6 @@ resource "azurerm_storage_account" "sonarqube" {
       var.subnet_aci_id,
       var.subnet_private_endpoints_id
     ]
-    # private_link_access {
-    #   endpoint_resource_id = azurerm_container_group.sonarqube.id
-    # }
   }
 
   blob_properties {
@@ -433,20 +425,20 @@ resource "azurerm_private_endpoint" "sa_table_pe" {
 }
 
 # File shares
-resource "azurerm_storage_share" "sonarqube_data_share" {
-  name               = "${var.name}sonardatashare"
-  storage_account_id = azurerm_storage_account.sonarqube.id
-  quota              = 25
-}
-
-resource "azurerm_storage_share" "sonarqube_extensions_share" {
-  name               = "${var.name}sonarextensionsshare"
+resource "azurerm_storage_share" "sonarqube_data" {
+  name               = "${var.name}datashare"
   storage_account_id = azurerm_storage_account.sonarqube.id
   quota              = 5
 }
 
-resource "azurerm_storage_share" "sonarqube_logs_share" {
-  name               = "${var.name}sonarlogsshare"
+resource "azurerm_storage_share" "sonarqube_extensions" {
+  name               = "${var.name}extensionsshare"
+  storage_account_id = azurerm_storage_account.sonarqube.id
+  quota              = 1
+}
+
+resource "azurerm_storage_share" "sonarqube_logs" {
+  name               = "${var.name}logsshare"
   storage_account_id = azurerm_storage_account.sonarqube.id
   quota              = 5
 }
@@ -496,21 +488,21 @@ resource "azurerm_container_group" "sonarqube" {
     #   mount_path           = "/opt/sonarqube/data"
     #   storage_account_name = azurerm_storage_account.sonarqube.name
     #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_data_share.name
+    #   share_name           = azurerm_storage_share.sonarqube_data.name
     # }
     # volume {
     #   name                 = "sonar-extensions"
     #   mount_path           = "/opt/sonarqube/extensions"
     #   storage_account_name = azurerm_storage_account.sonarqube.name
     #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_extensions_share.name
+    #   share_name           = azurerm_storage_share.sonarqube_extensions.name
     # }
     # volume {
     #   name                 = "sonar-logs"
     #   mount_path           = "/opt/sonarqube/logs"
     #   storage_account_name = azurerm_storage_account.sonarqube.name
     #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_logs_share.name
+    #   share_name           = azurerm_storage_share.sonarqube_logs.name
     # }
   }
 
