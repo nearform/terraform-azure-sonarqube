@@ -38,13 +38,18 @@ variable "subnet_private_endpoints_id" {
   type        = string
 }
 
+variable "subnet_pgsql_id" {
+  description = "The ID of the subnet used for the PostgreSQL database."
+  type        = string
+}
+
 variable "subnet_appgw_id" {
   description = "The ID of the subnet used for the Application Gateway."
   type        = string
 }
 
-variable "subnet_pgsql_id" {
-  description = "The ID of the subnet used for the PostgreSQL database."
+variable "subnet_aci_id" {
+  description = "The ID of the subnet used for the ACI."
   type        = string
 }
 

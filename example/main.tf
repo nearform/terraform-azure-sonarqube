@@ -24,6 +24,25 @@ resource "azurerm_subnet" "subnet_privateendpoints" {
   ]
 }
 
+resource "azurerm_subnet" "subnet_aci" {
+  name                 = "sonarqubesubnetaci"
+  address_prefixes     = local.subnet_address_range_aci
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  resource_group_name  = azurerm_resource_group.rg.name
+  service_endpoints = [
+    "Microsoft.Storage",
+    "Microsoft.ContainerRegistry"
+  ]
+  delegation {
+    name = "Microsoft.ContainerInstance/containerGroups"
+
+    service_delegation {
+      name    = "Microsoft.ContainerInstance/containerGroups"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
+}
+
 resource "azurerm_subnet" "subnet_appgw" {
   name                 = "sonarqubesubnetappgw"
   address_prefixes     = local.subnet_address_range_appgw
@@ -152,6 +171,7 @@ module "sonarqube" {
   subnet_private_endpoints_id = azurerm_subnet.subnet_privateendpoints.id
   subnet_pgsql_id             = azurerm_subnet.subnet_pgsql.id
   subnet_appgw_id             = azurerm_subnet.subnet_appgw.id
+  subnet_aci_id               = azurerm_subnet.subnet_aci.id
   kv_admins                   = var.kv_admins
   admins_allowed_ips          = var.admins_allowed_ips
 }

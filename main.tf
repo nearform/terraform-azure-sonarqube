@@ -300,9 +300,13 @@ resource "azurerm_storage_account" "sonarqube" {
   is_hns_enabled                = var.storage_account.is_hns_enabled
 
   network_rules {
-    default_action = "Allow"
+    default_action = "Deny"
     bypass         = ["AzureServices"]
     ip_rules       = [for ip in var.admins_allowed_ips : ip]
+    virtual_network_subnet_ids = [
+      var.subnet_aci_id,
+      var.subnet_private_endpoints_id
+    ]
   }
 
   blob_properties {
@@ -451,9 +455,11 @@ resource "azurerm_container_group" "sonarqube" {
   name                = "${var.name}${random_string.resource_name_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  dns_name_label      = "${var.name}${random_string.resource_name_suffix.result}"
-  os_type             = "Linux"
-  tags                = var.tags
+  ip_address_type     = "Private"
+  subnet_ids          = [var.subnet_aci_id]
+  # dns_name_label      = "${var.name}${random_string.resource_name_suffix.result}"
+  os_type = "Linux"
+  tags    = var.tags
 
   exposed_port = [
     {
@@ -479,31 +485,31 @@ resource "azurerm_container_group" "sonarqube" {
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE = true
     }
     secure_environment_variables = {
-      SONAR_JDBC_URL      = format("jdbc:postgresql://%s:5432/%s?sslmode=require", azurerm_postgresql_flexible_server.sonarqube.fqdn, azurerm_postgresql_flexible_server_database.sonarqube.name)
       SONAR_JDBC_USERNAME = var.sonar_db_user
       SONAR_JDBC_PASSWORD = azurerm_key_vault_secret.sonarqube_db_password.value
+      SONAR_JDBC_URL      = format("jdbc:postgresql://%s:5432/%s?sslmode=require", azurerm_postgresql_flexible_server.sonarqube.fqdn, azurerm_postgresql_flexible_server_database.sonarqube.name)
     }
-    volume {
-      name                 = "sonar-data"
-      mount_path           = "/opt/sonarqube/data"
-      storage_account_name = azurerm_storage_account.sonarqube.name
-      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-      share_name           = azurerm_storage_share.sonarqube_data_share.name
-    }
-    volume {
-      name                 = "sonar-extensions"
-      mount_path           = "/opt/sonarqube/extensions"
-      storage_account_name = azurerm_storage_account.sonarqube.name
-      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-      share_name           = azurerm_storage_share.sonarqube_extensions_share.name
-    }
-    volume {
-      name                 = "sonar-logs"
-      mount_path           = "/opt/sonarqube/logs"
-      storage_account_name = azurerm_storage_account.sonarqube.name
-      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-      share_name           = azurerm_storage_share.sonarqube_logs_share.name
-    }
+    # volume {
+    #   name                 = "sonar-data"
+    #   mount_path           = "/opt/sonarqube/data"
+    #   storage_account_name = azurerm_storage_account.sonarqube.name
+    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+    #   share_name           = azurerm_storage_share.sonarqube_data_share.name
+    # }
+    # volume {
+    #   name                 = "sonar-extensions"
+    #   mount_path           = "/opt/sonarqube/extensions"
+    #   storage_account_name = azurerm_storage_account.sonarqube.name
+    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+    #   share_name           = azurerm_storage_share.sonarqube_extensions_share.name
+    # }
+    # volume {
+    #   name                 = "sonar-logs"
+    #   mount_path           = "/opt/sonarqube/logs"
+    #   storage_account_name = azurerm_storage_account.sonarqube.name
+    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+    #   share_name           = azurerm_storage_share.sonarqube_logs_share.name
+    # }
   }
 
   identity {
