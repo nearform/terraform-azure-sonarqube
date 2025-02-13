@@ -88,12 +88,33 @@ resource "azurerm_network_security_group" "nsg_web" {
   tags = local.common_tags
 }
 
+resource "azurerm_network_security_group" "nsg_db" {
+  name                = "sonarqubensgdb"
+  location            = local.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  # Allow PostgreSQL inbound traffic
+  security_rule {
+    name                       = "AllowPostgreSQL"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "5432"
+    source_address_prefix      = "*"
+    destination_address_prefix = "*"
+  }
+
+  tags = local.common_tags
+}
+
 resource "azurerm_network_security_group" "nsg_appgw" {
   name                = "sonarqubensgappgw"
   location            = local.location
   resource_group_name = azurerm_resource_group.rg.name
 
-  # Allow inbound HTTP traffic
+  # Allow HTTP inbound traffic
   security_rule {
     name                       = "AllowWebInbound"
     priority                   = 100
@@ -122,20 +143,20 @@ resource "azurerm_network_security_group" "nsg_appgw" {
   tags = local.common_tags
 }
 
-resource "azurerm_network_security_group" "nsg_db" {
-  name                = "sonarqubensgdb"
+resource "azurerm_network_security_group" "nsg_aci" {
+  name                = "sonarqubensgaci"
   location            = local.location
   resource_group_name = azurerm_resource_group.rg.name
 
-  # Allow PostgreSQL inbound traffic
+  # Allow SonarQube inbound traffic
   security_rule {
-    name                       = "AllowPostgreSQL"
+    name                       = "AllowSonarQube"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
     source_port_range          = "*"
-    destination_port_range     = "5432"
+    destination_port_range     = local.sonar_port
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
@@ -148,14 +169,19 @@ resource "azurerm_subnet_network_security_group_association" "nsg_privateendpoin
   network_security_group_id = azurerm_network_security_group.nsg_web.id
 }
 
+resource "azurerm_subnet_network_security_group_association" "nsg_pgsql" {
+  subnet_id                 = azurerm_subnet.subnet_pgsql.id
+  network_security_group_id = azurerm_network_security_group.nsg_db.id
+}
+
 resource "azurerm_subnet_network_security_group_association" "nsg_appgw" {
   subnet_id                 = azurerm_subnet.subnet_appgw.id
   network_security_group_id = azurerm_network_security_group.nsg_appgw.id
 }
 
-resource "azurerm_subnet_network_security_group_association" "nsg_pgsql" {
-  subnet_id                 = azurerm_subnet.subnet_pgsql.id
-  network_security_group_id = azurerm_network_security_group.nsg_db.id
+resource "azurerm_subnet_network_security_group_association" "nsg_aci" {
+  subnet_id                 = azurerm_subnet.subnet_aci.id
+  network_security_group_id = azurerm_network_security_group.nsg_aci.id
 }
 
 provider "azurerm" {
@@ -165,6 +191,7 @@ provider "azurerm" {
 module "sonarqube" {
   source                      = "../"
   sonar_image_tag             = "10.7.0-community"
+  sonar_port                  = local.sonar_port
   location                    = local.location
   resource_group_name         = azurerm_resource_group.rg.name
   vnet_id                     = azurerm_virtual_network.vnet.id
