@@ -136,6 +136,20 @@ resource "azurerm_container_registry" "sonarqube" {
   tags                          = var.tags
 }
 
+# Authenticate to ACR, pull the public image from Docker Hub, tag it, and push to ACR
+resource "null_resource" "sonar_image_pull_tag_push" {
+  depends_on = [azurerm_container_registry.sonarqube]
+
+  provisioner "local-exec" {
+    command = <<EOT
+      az acr login --name ${azurerm_container_registry.sonarqube.name}
+      docker pull sonarqube:${var.sonar_image_tag}
+      docker tag sonarqube:${var.sonar_image_tag} ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
+      docker push ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
+      docker rmi sonarqube:${var.sonar_image_tag} ${azurerm_container_registry.sonarqube.login_server}/sonarqube:${var.sonar_image_tag}
+    EOT
+  }
+}
 
 ################################################################################
 # KeyVault
