@@ -4,6 +4,12 @@
 data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "current" {}
 
+resource "random_string" "resource_name_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 ################################################################################
 # DNS Zones
 ################################################################################
@@ -121,7 +127,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "keyvault_vnetlink" {
 # Azure Container Registry
 ################################################################################
 resource "azurerm_container_registry" "sonarqube" {
-  name                          = var.name
+  name                          = "${var.name}${random_string.resource_name_suffix.result}"
   location                      = var.location
   resource_group_name           = var.resource_group_name
   sku                           = "Standard"
@@ -129,6 +135,7 @@ resource "azurerm_container_registry" "sonarqube" {
   public_network_access_enabled = true
   tags                          = var.tags
 }
+
 
 ################################################################################
 # KeyVault
@@ -176,7 +183,7 @@ resource "azurerm_key_vault_access_policy" "kv_policy_admin" {
   for_each           = toset(var.kv_admins)
   key_vault_id       = azurerm_key_vault.keyvault.id
   tenant_id          = data.azurerm_client_config.current.tenant_id
-  object_id          = each.key # Use the current user ID in the loop
+  object_id          = each.key
   secret_permissions = local.kv_secret_permissions_admin
 }
 
@@ -296,7 +303,7 @@ resource "azurerm_postgresql_flexible_server_database" "sonarqube" {
 # Storage Account
 ################################################################################
 resource "azurerm_storage_account" "sonarqube" {
-  name                          = var.name
+  name                          = "${var.name}${random_string.resource_name_suffix.result}"
   location                      = var.location
   resource_group_name           = var.resource_group_name
   account_kind                  = var.storage_account.account_kind
@@ -544,11 +551,11 @@ resource "azurerm_role_assignment" "sonarqube2acr" {
 # Public IP Adress
 ################################################################################
 resource "azurerm_public_ip" "appgw" {
-  name                = var.name
+  name                = "${var.name}${random_string.resource_name_suffix.result}"
   resource_group_name = var.resource_group_name
   location            = var.location
   allocation_method   = "Static"
-  domain_name_label   = var.name
+  domain_name_label   = "${var.name}${random_string.resource_name_suffix.result}"
   sku                 = "Standard"
   sku_tier            = "Regional"
   ip_version          = "IPv4"
