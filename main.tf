@@ -457,9 +457,8 @@ resource "azurerm_container_group" "sonarqube" {
   resource_group_name = var.resource_group_name
   ip_address_type     = "Private"
   subnet_ids          = [var.subnet_aci_id]
-  # dns_name_label      = "${var.name}${random_string.resource_name_suffix.result}"
-  os_type = "Linux"
-  tags    = var.tags
+  os_type             = "Linux"
+  tags                = var.tags
 
   exposed_port = [
     {
