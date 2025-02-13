@@ -146,6 +146,7 @@ variable "sonar_container_name" {
 }
 
 variable "sonar_image_tag" {
-  description = "The specific tag of the SonarQube Docker image to deploy (e.g., `9.9.2-community`)."
+  description = "The specific tag of the SonarQube Docker image to deploy."
   type        = string
+  default     = "community"
 }
