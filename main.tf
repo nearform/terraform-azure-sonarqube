@@ -562,7 +562,6 @@ locals {
   backend_http_setting_name      = "backendHttpSettings"
   http_listener_name             = "httpListener"
   request_routing_http_rule_name = "routingRuleHttp80"
-  url_path_map_name              = "adminUrlPathMap"
 }
 
 resource "azurerm_application_gateway" "appgw" {
@@ -623,11 +622,12 @@ resource "azurerm_application_gateway" "appgw" {
   }
 
   request_routing_rule {
-    name               = local.request_routing_http_rule_name
-    http_listener_name = local.http_listener_name
-    priority           = 10
-    rule_type          = "PathBasedRouting"
-    url_path_map_name  = local.url_path_map_name
+    name                       = local.request_routing_http_rule_name
+    http_listener_name         = local.http_listener_name
+    priority                   = 10
+    rule_type                  = "Basic"
+    backend_address_pool_name  = local.backend_address_pool_name
+    backend_http_settings_name = local.backend_http_setting_name
   }
 
   tags       = var.tags
