@@ -250,54 +250,24 @@ resource "azurerm_key_vault_secret" "sonarqube_db_password" {
 # PostgreSQL Flexible Server
 ################################################################################
 resource "azurerm_postgresql_flexible_server" "sonarqube" {
-  name                   = var.sonar_db_server
-  location               = var.location
-  resource_group_name    = var.resource_group_name
-  version                = "16"
-  delegated_subnet_id    = var.subnet_pgsql_id
-  private_dns_zone_id    = azurerm_private_dns_zone.pgsql_server_dns.id
-  administrator_login    = var.sonar_db_user
-  administrator_password = azurerm_key_vault_secret.sonarqube_db_password.value
-  storage_mb             = 32768
-  storage_tier           = var.sonar_db_storage_type
-  sku_name               = var.sonar_db_instance_class
-  zone                   = "1"
-  tags                   = var.tags
-  depends_on             = [azurerm_private_dns_zone_virtual_network_link.pgsql_server_vnetlink]
+  name                          = var.sonar_db_server
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  version                       = "16"
+  public_network_access_enabled = false
+  delegated_subnet_id           = var.subnet_pgsql_id
+  private_dns_zone_id           = azurerm_private_dns_zone.pgsql_server_dns.id
+  administrator_login           = var.sonar_db_user
+  administrator_password        = azurerm_key_vault_secret.sonarqube_db_password.value
+  storage_mb                    = 32768
+  storage_tier                  = var.sonar_db_storage_type
+  sku_name                      = var.sonar_db_instance_class
+  zone                          = "1"
+  tags                          = var.tags
+  depends_on                    = [azurerm_private_dns_zone_virtual_network_link.pgsql_server_vnetlink]
 
   authentication {
     password_auth_enabled = true
-  }
-}
-
-# PostgreSQL Server Firewall whitelisting
-resource "azurerm_postgresql_flexible_server_firewall_rule" "pgsql_allow_user_ip" {
-  for_each         = var.admins_allowed_ips
-  name             = "allow_${each.key}_access"
-  server_id        = azurerm_postgresql_flexible_server.sonarqube.id
-  start_ip_address = each.value
-  end_ip_address   = each.value # Single IP, start and end are the same
-}
-
-# Private endpoint
-resource "azurerm_private_endpoint" "pgsqlserver_pe" {
-  name                          = "${var.name}pgsqlserver-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}pgsqlserver-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}pgsqlserver-private-service-connection"
-    private_connection_resource_id = azurerm_postgresql_flexible_server.sonarqube.id
-    subresource_names              = ["postgresqlServer"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.pgsql_server_dns.id]
   }
 }
 
@@ -330,7 +300,7 @@ resource "azurerm_storage_account" "sonarqube" {
   is_hns_enabled                = var.storage_account.is_hns_enabled
 
   network_rules {
-    default_action = "Deny"
+    default_action = "Allow"
     bypass         = ["AzureServices"]
     ip_rules       = [for ip in var.admins_allowed_ips : ip]
   }
@@ -478,10 +448,10 @@ resource "azurerm_storage_share" "sonarqube_logs_share" {
 # Azure Container Instance
 ################################################################################
 resource "azurerm_container_group" "sonarqube" {
-  name                = var.name
+  name                = "${var.name}${random_string.resource_name_suffix.result}"
   location            = var.location
   resource_group_name = var.resource_group_name
-  dns_name_label      = var.name
+  dns_name_label      = "${var.name}${random_string.resource_name_suffix.result}"
   os_type             = "Linux"
   tags                = var.tags
 
