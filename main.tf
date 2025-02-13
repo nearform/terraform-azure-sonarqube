@@ -520,7 +520,6 @@ resource "azurerm_container_group" "sonarqube" {
 
   diagnostics {
     log_analytics {
-      log_type      = "ContainerInstanceLogs"
       workspace_id  = azurerm_log_analytics_workspace.sonarqube.workspace_id
       workspace_key = azurerm_log_analytics_workspace.sonarqube.primary_shared_key
     }
