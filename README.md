@@ -76,6 +76,35 @@ storage_account = {
 }
 ```
 
+### Security Considerations
+
+To ensure secure access to key infrastructure components, the following sensitive variables should be populated properly:
+
+- **`kv_admins`**: A list of Azure Active Directory (AAD) user IDs who should have administrative access to the Azure Key Vault.
+- **`admins_allowed_ips`**: A mapping of admin names to their allowed public IP addresses, restricting remote access to sensitive services.
+
+It is highly recommended to store these values in a **.tfvars** file instead of defining them directly in Terraform configuration files. This improves security and prevents accidental exposure in version control.
+
+Example **`terraform.tfvars`**:
+
+```hcl
+kv_admins = ["11111111-2222-3333-4444-555555555555"]
+
+admins_allowed_ips = {
+    "Admin1" = "203.0.113.10"
+    "Admin2" = "198.51.100.24"
+}
+```
+
+Apply Terraform using the .tfvars file:
+
+```sh
+terraform apply -var-file="terraform.tfvars"
+```
+
+This ensures that the correct administrators have access to key resources while maintaining best security practices.
+
+
 ## Outputs
 
 | Name         | Description                                                                 |
@@ -107,9 +136,6 @@ module "sonarqube" {
   subnet_pgsql_id             = "subnet-xxxxxxxx"
   subnet_appgw_id             = "subnet-xxxxxxxx"
 
-  # Key Vault
-  kv_admins = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
-
   # SonarQube Configuration
   sonar_db_server          = "sonardbserver"
   sonar_db_instance_class  = "Standard_D2s_v3"
@@ -119,6 +145,10 @@ module "sonarqube" {
   sonar_port               = 9000
   sonar_container_name     = "sonarqube"
   sonar_image_tag          = "community"
+
+  # Admin
+  kv_admins                   = var.kv_admins
+  admins_allowed_ips          = var.admins_allowed_ips
 }
 ```
 
