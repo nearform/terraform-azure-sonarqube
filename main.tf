@@ -474,9 +474,9 @@ resource "azurerm_container_group" "sonarqube" {
       protocol = "TCP"
     }
     environment_variables = {
+      SONAR_SEARCH_JAVAADDITIONALOPTS   = "-Dnode.store.allow_mmap=false,-Ddiscovery.type=single-node"
+      SONAR_WEB_CONTEXT                 = "/"
       SONAR_ES_BOOTSTRAP_CHECKS_DISABLE = true
-      SONAR_WEB_JAVAADDITIONALOPTS      = "-javaagent:./extensions/plugins/sonarqube-community-branch-plugin-1.22.0.jar=web"
-      SONAR_CE_JAVAADDITIONALOPTS       = "-javaagent:./extensions/plugins/sonarqube-community-branch-plugin-1.22.0.jar=ce"
     }
     secure_environment_variables = {
       SONAR_JDBC_URL      = format("jdbc:postgresql://%s:5432/%s?sslmode=require", azurerm_postgresql_flexible_server.sonarqube.fqdn, azurerm_postgresql_flexible_server_database.sonarqube.name)
@@ -516,6 +516,14 @@ resource "azurerm_container_group" "sonarqube" {
   image_registry_credential {
     user_assigned_identity_id = azurerm_user_assigned_identity.sonarqube.id
     server                    = azurerm_container_registry.sonarqube.login_server
+  }
+
+  diagnostics {
+    log_analytics {
+      log_type      = "ContainerInstanceLogs"
+      workspace_id  = azurerm_log_analytics_workspace.sonarqube.workspace_id
+      workspace_key = azurerm_log_analytics_workspace.sonarqube.primary_shared_key
+    }
   }
 }
 
@@ -652,4 +660,16 @@ resource "azurerm_key_vault_access_policy" "kv_policy_appgw" {
   tenant_id          = data.azurerm_client_config.current.tenant_id
   object_id          = azurerm_user_assigned_identity.appgw.principal_id
   secret_permissions = local.kv_secret_permissions_user
+}
+
+################################################################################
+# AppInsights Workspace
+################################################################################
+resource "azurerm_log_analytics_workspace" "sonarqube" {
+  name                = "${var.name}${random_string.resource_name_suffix.result}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  sku                 = "PerGB2018" # cannot be changed as per https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace?WT.mc_id=enterprise-0000-shkuehn#sku-1
+  retention_in_days   = 30
+  daily_quota_gb      = 5
 }
