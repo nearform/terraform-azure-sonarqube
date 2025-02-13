@@ -36,7 +36,7 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 | `subnet_pgsql_id`             | The ID of the subnet used for the PostgreSQL database | `string`       | N/A                    | yes      |
 | `subnet_appgw_id`             | The ID of the subnet used for the Application Gateway | `string`       | N/A                    | yes      |
 | `keyvault`                    | Configuration for Azure Key Vault                     | `object`       | See below              | no       |
-| `kv_admins`                   | List of user IDs with admin privileges over Key Vault | `list(string)` | N/A                    | yes      |
+| `kv_admins`                   | List of user IDs with admin privileges over Key Vault | `list(string)` | `[]`                   | no       |
 | `storage_account`             | Configuration for the Azure Storage Account           | `object`       | See below              | no       |
 | `sonar_db_server`             | The name of the SonarQube database server             | `string`       | `"sonardbserver"`      | no       |
 | `sonar_db_instance_class`     | The instance class for the SonarQube database         | `string`       | `"GP_Standard_D2s_v3"` | no       |
@@ -45,7 +45,7 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 | `sonar_db_user`               | The username for the SonarQube database               | `string`       | `"sonar"`              | no       |
 | `sonar_port`                  | The port on which SonarQube will run                  | `number`       | `9000`                 | no       |
 | `sonar_container_name`        | The name of the SonarQube container                   | `string`       | `"sonarqube"`          | no       |
-| `sonar_image_tag`             | The Docker Hub tag of the SonarQube image to deploy   | `string`       | N/A                    | yes      |
+| `sonar_image_tag`             | The Docker Hub tag of the SonarQube image to deploy   | `string`       | `"community"`          | no       |
 
 ### Default Configuration for Key Vault
 
@@ -127,7 +127,7 @@ module "sonarqube" {
 You can specify a different version of the SonarQube Docker image by setting the `sonar_image_tag` variable:
 
 ```hcl
-sonar_image_tag = "9.9.1-community"
+sonar_image_tag = "10.7.0-community"
 ```
 
 ### Using a Different Database Instance
