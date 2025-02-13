@@ -68,6 +68,7 @@ variable "keyvault" {
 variable "kv_admins" {
   description = "A list of user IDs with admin privileges over the Azure Key Vault."
   type        = list(string)
+  default     = []
 }
 
 # Storage Accounts
