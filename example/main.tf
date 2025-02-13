@@ -152,4 +152,6 @@ module "sonarqube" {
   subnet_private_endpoints_id = azurerm_subnet.subnet_privateendpoints.id
   subnet_pgsql_id             = azurerm_subnet.subnet_pgsql.id
   subnet_appgw_id             = azurerm_subnet.subnet_appgw.id
+  kv_admins                   = var.kv_admins
+  admins_allowed_ips          = var.admins_allowed_ips
 }
