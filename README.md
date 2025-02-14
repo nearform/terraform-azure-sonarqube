@@ -125,9 +125,9 @@ This ensures that the correct administrators have access to key resources while 
 
 ## Enabling HTTPS Support
 
-This Terraform module does **not** include HTTPS (TLS) support in the Azure Application Gateway (AppGW) by default. While the initial implementation supported TLS termination, we decided to **leave HTTPS configuration to the user** for the following reasons:
+This Terraform module does **not** include HTTPS (TLS) support in the Azure Application Gateway (AppGW) by default for the following reasons:
 
-- **DNS & Certificate Complexity**: Automating HTTPS across all use cases is challenging. Different organizations use various **DNS providers, certificate authorities (CAs), and domain types**, some of which (e.g., `.ie` domains) are not natively supported in certain cloud environments.  
+- **DNS & Certificate Complexity**: Automating HTTPS across all use cases is challenging. Different organizations use various **DNS providers, certificate authorities (CAs), and domain types**, some of which are not natively supported in certain cloud environments.  
 - **Flexibility for Users**: HTTPS implementation varies based on **security policies, internal PKI infrastructure, and certificate lifecycle management**. Providing a one-size-fits-all approach could introduce unnecessary constraints.  
 - **User Control**: Delegating TLS configuration allows users to integrate with **existing certificate automation workflows** and manage domain-specific requirements independently.  
 
@@ -149,10 +149,6 @@ To introduce HTTPS support for your SonarQube deployment, follow these steps:
      - Create a **new HTTPS listener** on port **443**.  
      - Attach the generated/imported **TLS certificate**.  
      - Ensure that backend HTTP traffic is properly forwarded.  
-
-4. **Update Firewall and Security Rules**  
-   - Allow inbound traffic on **port 443**.  
-   - Restrict access to only necessary IP ranges or networks (if required).  
 
 By following these steps, users can enable HTTPS while maintaining flexibility over their **certificate management, domain setup, and security policies**.
 
