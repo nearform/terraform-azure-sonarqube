@@ -38,13 +38,18 @@ variable "subnet_private_endpoints_id" {
   type        = string
 }
 
+variable "subnet_pgsql_id" {
+  description = "The ID of the subnet used for the PostgreSQL database."
+  type        = string
+}
+
 variable "subnet_appgw_id" {
   description = "The ID of the subnet used for the Application Gateway."
   type        = string
 }
 
-variable "subnet_pgsql_id" {
-  description = "The ID of the subnet used for the PostgreSQL database."
+variable "subnet_aci_id" {
+  description = "The ID of the subnet used for the ACI."
   type        = string
 }
 
@@ -68,6 +73,7 @@ variable "keyvault" {
 variable "kv_admins" {
   description = "A list of user IDs with admin privileges over the Azure Key Vault."
   type        = list(string)
+  default     = []
 }
 
 # Storage Accounts
@@ -145,6 +151,7 @@ variable "sonar_container_name" {
 }
 
 variable "sonar_image_tag" {
-  description = "The specific tag of the SonarQube Docker image to deploy (e.g., `9.9.2-community`)."
+  description = "The specific tag of the SonarQube Docker image to deploy."
   type        = string
+  default     = "community"
 }

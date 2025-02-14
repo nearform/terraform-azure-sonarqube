@@ -19,34 +19,36 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 
 - Terraform v1.9+
 - Azure CLI
-- An Azure account with necessary IAM permissions
+- An Azure account with necessary permissions
+- **Pre-existing networking infrastructure:** This module requires that the VNet, subnets, and networking resources are deployed beforehand.
 
 ## Inputs
 
-| Name                                      | Description                                                         | Type          | Default        | Required |
-|-------------------------------------------|---------------------------------------------------------------------|--------------|---------------|----------|
-| `name`                                    | Name to be used on all resources as an identifier                   | `string`     | `"sonarqube"` | no       |
-| `tags`                                    | A map of tags to add to all resources                               | `map(string)`| `{}`          | no       |
-| `location`                                | Azure region where resources will be deployed                       | `string`     | `"northeurope"` | no       |
-| `resource_group_name`                     | The name of the Azure resource group                                | `string`     | N/A           | yes      |
-| `admins_allowed_ips`                      | Mapping of admin users to their allowed public IPs                  | `map(string)`| `{}`          | no       |
-| `vnet_id`                                 | ID of the Virtual Network                                           | `string`     | N/A           | yes      |
-| `subnet_private_endpoints_id`     | The ID of the subnet used for private endpoints         | `string`| N/A             | yes      |
-| `subnet_appgw_id`                 | The ID of the subnet used for the Application Gateway   | `string`| N/A             | yes      |
-| `subnet_pgsql_id`                 | The ID of the subnet used for the PostgreSQL database   | `string`| N/A             | yes      || `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
-| `keyvault`                                | Configuration for Azure Key Vault                                   | `object`     | See below     | no       |
-| `kv_admins`                               | List of user IDs with admin privileges over Key Vault               | `list(string)`| N/A          | yes      |
-| `storage_account`                         | Configuration for the Azure Storage Account                         | `object`     | See below     | no       |
-| `sonar_db_server`                         | The name of the SonarQube database server                           | `string`     | `"sonardbserver"` | no       |
-| `sonar_db_instance_class`                 | The instance class for the SonarQube database                       | `string`     | `"GP_Standard_D2s_v3"` | no       |
-| `sonar_db_storage_type`                   | The storage type for the SonarQube database                         | `string`     | `"P10"` | no       |
-| `sonar_db_name`                           | The name of the SonarQube database                                  | `string`     | `"sonar"`     | no       |
-| `sonar_db_user`                           | The username for the SonarQube database                             | `string`     | `"sonar"`     | no       |
-| `sonar_port`                              | The port on which SonarQube will run                                | `number`     | `9000`        | no       |
-| `sonar_container_name`                    | The name of the SonarQube container                                 | `string`     | `"sonarqube"` | no       |
-| `sonar_image_tag`                         | The Docker Hub tag of the SonarQube image to deploy                 | `string`     | N/A           | yes      |
+| Name                          | Description                                           | Type           | Default                | Required |
+| ----------------------------- | ----------------------------------------------------- | -------------- | ---------------------- | -------- |
+| `name`                        | Name to be used on all resources as an identifier     | `string`       | `"sonarqube"`          | no       |
+| `tags`                        | A map of tags to add to all resources                 | `map(string)`  | `{}`                   | no       |
+| `location`                    | Azure region where resources will be deployed         | `string`       | `"northeurope"`        | no       |
+| `resource_group_name`         | The name of the Azure resource group                  | `string`       | N/A                    | yes      |
+| `admins_allowed_ips`          | Mapping of admin users to their allowed public IPs    | `map(string)`  | `{}`                   | no       |
+| `vnet_id`                     | ID of the Virtual Network                             | `string`       | N/A                    | yes      |
+| `subnet_private_endpoints_id` | The ID of the subnet used for private endpoints       | `string`       | N/A                    | yes      |
+| `subnet_pgsql_id`             | The ID of the subnet used for the PostgreSQL database | `string`       | N/A                    | yes      |
+| `subnet_appgw_id`             | The ID of the subnet used for the Application Gateway | `string`       | N/A                    | yes      |
+| `keyvault`                    | Configuration for Azure Key Vault                     | `object`       | See below              | no       |
+| `kv_admins`                   | List of user IDs with admin privileges over Key Vault | `list(string)` | `[]`                   | no       |
+| `storage_account`             | Configuration for the Azure Storage Account           | `object`       | See below              | no       |
+| `sonar_db_server`             | The name of the SonarQube database server             | `string`       | `"sonardbserver"`      | no       |
+| `sonar_db_instance_class`     | The instance class for the SonarQube database         | `string`       | `"GP_Standard_D2s_v3"` | no       |
+| `sonar_db_storage_type`       | The storage type for the SonarQube database           | `string`       | `"P10"`                | no       |
+| `sonar_db_name`               | The name of the SonarQube database                    | `string`       | `"sonar"`              | no       |
+| `sonar_db_user`               | The username for the SonarQube database               | `string`       | `"sonar"`              | no       |
+| `sonar_port`                  | The port on which SonarQube will run                  | `number`       | `9000`                 | no       |
+| `sonar_container_name`        | The name of the SonarQube container                   | `string`       | `"sonarqube"`          | no       |
+| `sonar_image_tag`             | The Docker Hub tag of the SonarQube image to deploy   | `string`       | `"community"`          | no       |
 
 ### Default Configuration for Key Vault
+
 ```hcl
 keyvault = {
   sku                    = "standard"
@@ -57,6 +59,7 @@ keyvault = {
 ```
 
 ### Default Configuration for Storage Account
+
 ```hcl
 storage_account = {
   account_kind                 = "StorageV2"
@@ -73,15 +76,45 @@ storage_account = {
 }
 ```
 
+### Security Considerations
+
+To ensure secure access to key infrastructure components, the following sensitive variables should be populated properly:
+
+- **`kv_admins`**: A list of Azure Active Directory (AAD) user IDs who should have administrative access to the Azure Key Vault.
+- **`admins_allowed_ips`**: A mapping of admin names to their allowed public IP addresses, restricting remote access to sensitive services.
+
+It is highly recommended to store these values in a **.tfvars** file instead of defining them directly in Terraform configuration files. This improves security and prevents accidental exposure in version control.
+
+Example **`terraform.tfvars`**:
+
+```hcl
+kv_admins = ["11111111-2222-3333-4444-555555555555"]
+
+admins_allowed_ips = {
+    "Admin1" = "203.0.113.10"
+    "Admin2" = "198.51.100.24"
+}
+```
+
+Apply Terraform using the .tfvars file:
+
+```sh
+terraform apply -var-file="terraform.tfvars"
+```
+
+This ensures that the correct administrators have access to key resources while maintaining best security practices.
+
+
 ## Outputs
 
-| Name                     | Description |
-|--------------------------|-------------|
-| `appgw_fqdn`  | The fully qualified domain name (FQDN) of the Application Gateway public IP |
+| Name         | Description                                                                 |
+| ------------ | --------------------------------------------------------------------------- |
+| `appgw_fqdn` | The fully qualified domain name (FQDN) of the Application Gateway public IP |
 
 ## Examples
 
 ### **Basic Usage**
+
 The following example deploys SonarQube in Azure using the Terraform module.
 
 ```hcl
@@ -96,17 +129,12 @@ module "sonarqube" {
   }
 
   # Networking
-  resource_group_name               = "rg-sonarqube"
-  location                          = "northeurope"
-  vnet_id                           = "vnet-xxxxxxxx"
-  vnet_address_space                = ["10.0.0.0/16"]
-  subnet_address_range_private_endpoints = ["10.0.1.0/24"]
-  subnet_address_range_containers   = ["10.0.2.0/24"]
-  subnet_address_range_appgw        = ["10.0.3.0/24"]
-  subnet_address_range_pgsql        = ["10.0.4.0/24"]
-
-  # Key Vault
-  kv_admins = ["xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"]
+  resource_group_name         = "sonarqube"
+  location                    = "northeurope"
+  vnet_id                     = "vnet-xxxxxxxx"
+  subnet_private_endpoints_id = "subnet-xxxxxxxx"
+  subnet_pgsql_id             = "subnet-xxxxxxxx"
+  subnet_appgw_id             = "subnet-xxxxxxxx"
 
   # SonarQube Configuration
   sonar_db_server          = "sonardbserver"
@@ -117,6 +145,10 @@ module "sonarqube" {
   sonar_port               = 9000
   sonar_container_name     = "sonarqube"
   sonar_image_tag          = "community"
+
+  # Admin
+  kv_admins                   = var.kv_admins
+  admins_allowed_ips          = var.admins_allowed_ips
 }
 ```
 
@@ -125,7 +157,7 @@ module "sonarqube" {
 You can specify a different version of the SonarQube Docker image by setting the `sonar_image_tag` variable:
 
 ```hcl
-sonar_image_tag = "9.9.1-community"
+sonar_image_tag = "10.7.0-community"
 ```
 
 ### Using a Different Database Instance
@@ -151,3 +183,5 @@ We welcome contributions to improve this Terraform module! Here’s how you can 
 For larger changes or new features, please open an issue first to discuss the approach before starting work on it.
 
 Thanks for helping improve this project!
+
+[![banner](https://raw.githubusercontent.com/nearform/.github/refs/heads/master/assets/os-banner-green.svg)](https://www.nearform.com/contact/?utm_source=open-source&utm_medium=banner&utm_campaign=os-project-pages)
