@@ -1,4 +1,5 @@
 locals {
+  name                                   = "sonarqubetest"
   location                               = "northeurope"
   vnet_address_space                     = ["172.17.0.0/21"]
   subnet_address_range_private_endpoints = ["172.17.1.0/24"]
