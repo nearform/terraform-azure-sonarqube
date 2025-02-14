@@ -8,6 +8,7 @@ This Terraform module deploys a **SonarQube container** in **Azure Container Ins
 
 - **Azure Container Instances (ACI)** – Runs the SonarQube container within a secure and scalable environment.
 - **Azure Database for PostgreSQL Flexible Server** – Provides a managed PostgreSQL database for SonarQube.
+- **Azure Container Registry** – Stores the SonarQube Docker image.
 - **Azure Key Vault** – Securely stores sensitive information such as database credentials.
 - **Azure Application Gateway (AppGW)** – Acts as the entry point for external access while keeping all internal resources private.
 - **Azure Storage Account** – Ensures persistent storage for SonarQube data, including logs, extensions, and cache.
