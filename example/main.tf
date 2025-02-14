@@ -195,7 +195,7 @@ provider "azurerm" {
 module "sonarqube" {
   source                      = "../"
   name                        = local.name
-  sonar_image_tag             = "10.7.0-community"
+  sonar_image_tag             = local.sonar_image_tag
   sonar_port                  = local.sonar_port
   location                    = local.location
   resource_group_name         = azurerm_resource_group.rg.name

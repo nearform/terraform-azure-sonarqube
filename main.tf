@@ -91,6 +91,12 @@ resource "azurerm_container_registry" "sonarqube" {
   tags                          = var.tags
 }
 
+resource "azurerm_management_lock" "sonarqube_acr" {
+  name       = var.name
+  scope      = azurerm_container_registry.sonarqube.id
+  lock_level = "CanNotDelete"
+}
+
 # Authenticate to ACR, pull the public image from Docker Hub, tag it, and push to ACR
 resource "null_resource" "sonar_image_pull_tag_push" {
   depends_on = [azurerm_container_registry.sonarqube]
@@ -224,6 +230,12 @@ resource "azurerm_postgresql_flexible_server" "sonarqube" {
   authentication {
     password_auth_enabled = true
   }
+}
+
+resource "azurerm_management_lock" "sonarqube_pgsql" {
+  name       = var.name
+  scope      = azurerm_postgresql_flexible_server.sonarqube.id
+  lock_level = "CanNotDelete"
 }
 
 resource "azurerm_postgresql_flexible_server_database" "sonarqube" {
@@ -460,7 +472,7 @@ locals {
   request_routing_http_rule_name = "routingRuleHttp80"
 }
 
-resource "azurerm_application_gateway" "appgw" {
+resource "azurerm_application_gateway" "sonarqube" {
   name                = "${var.name}appgw"
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -529,6 +541,12 @@ resource "azurerm_application_gateway" "appgw" {
   depends_on = [azurerm_key_vault_access_policy.kv_policy_appgw]
 }
 
+resource "azurerm_management_lock" "sonarqube_appgw" {
+  name       = var.name
+  scope      = azurerm_application_gateway.sonarqube.id
+  lock_level = "CanNotDelete"
+}
+
 # AppGw user assigned identity
 resource "azurerm_user_assigned_identity" "appgw" {
   name                = "${var.name}appgw"
@@ -550,7 +568,7 @@ resource "azurerm_key_vault_access_policy" "kv_policy_appgw" {
 }
 
 ################################################################################
-# AppInsights Workspace
+# Log Analytics Workspace
 ################################################################################
 resource "azurerm_log_analytics_workspace" "sonarqube" {
   name                = "${var.name}${random_string.resource_name_suffix.result}"
