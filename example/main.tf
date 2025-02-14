@@ -1,6 +1,6 @@
 # Resource Group
 resource "azurerm_resource_group" "rg" {
-  name     = "sonarqube"
+  name     = local.name
   location = local.location
 }
 
@@ -24,6 +24,33 @@ resource "azurerm_subnet" "subnet_privateendpoints" {
   ]
 }
 
+resource "azurerm_subnet" "subnet_pgsql" {
+  name                 = "sonarqubesubnetpgsql"
+  resource_group_name  = azurerm_resource_group.rg.name
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  address_prefixes     = local.subnet_address_range_pgsql
+  service_endpoints = [
+    "Microsoft.Storage",
+  ]
+
+  delegation {
+    name = "Microsoft.DBforPostgreSQL/flexibleServers"
+    service_delegation {
+      name = "Microsoft.DBforPostgreSQL/flexibleServers"
+      actions = [
+        "Microsoft.Network/virtualNetworks/subnets/join/action",
+      ]
+    }
+  }
+}
+
+resource "azurerm_subnet" "subnet_appgw" {
+  name                 = "sonarqubesubnetappgw"
+  address_prefixes     = local.subnet_address_range_appgw
+  virtual_network_name = azurerm_virtual_network.vnet.name
+  resource_group_name  = azurerm_resource_group.rg.name
+}
+
 resource "azurerm_subnet" "subnet_aci" {
   name                 = "sonarqubesubnetaci"
   address_prefixes     = local.subnet_address_range_aci
@@ -39,29 +66,6 @@ resource "azurerm_subnet" "subnet_aci" {
     service_delegation {
       name    = "Microsoft.ContainerInstance/containerGroups"
       actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
-    }
-  }
-}
-
-resource "azurerm_subnet" "subnet_appgw" {
-  name                 = "sonarqubesubnetappgw"
-  address_prefixes     = local.subnet_address_range_appgw
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  resource_group_name  = azurerm_resource_group.rg.name
-}
-
-resource "azurerm_subnet" "subnet_pgsql" {
-  name                 = "sonarqubesubnetpgsql"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = local.subnet_address_range_pgsql
-  delegation {
-    name = "Microsoft.DBforPostgreSQL/flexibleServers"
-    service_delegation {
-      name = "Microsoft.DBforPostgreSQL/flexibleServers"
-      actions = [
-        "Microsoft.Network/virtualNetworks/subnets/join/action",
-      ]
     }
   }
 }
@@ -190,6 +194,7 @@ provider "azurerm" {
 
 module "sonarqube" {
   source                      = "../"
+  name                        = local.name
   sonar_image_tag             = "10.7.0-community"
   sonar_port                  = local.sonar_port
   location                    = local.location
