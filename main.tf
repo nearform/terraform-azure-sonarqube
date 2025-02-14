@@ -35,27 +35,6 @@ resource "azurerm_private_dns_zone" "sa_file_dns" {
   tags                = var.tags
 }
 
-### Web
-resource "azurerm_private_dns_zone" "sa_web_dns" {
-  name                = "privatelink.web.core.windows.net"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
-### Queue
-resource "azurerm_private_dns_zone" "sa_queue_dns" {
-  name                = "privatelink.queue.core.windows.net"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
-### Table
-resource "azurerm_private_dns_zone" "sa_table_dns" {
-  name                = "privatelink.table.core.windows.net"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
 ## Key Vault
 resource "azurerm_private_dns_zone" "keyvault_dns" {
   name                = "privatelink.vaultcore.azure.net"
@@ -87,30 +66,6 @@ resource "azurerm_private_dns_zone_virtual_network_link" "sa_blob_vnetlink" {
 resource "azurerm_private_dns_zone_virtual_network_link" "sa_file_vnetlink" {
   name                  = "${var.name}safilevnetlink"
   private_dns_zone_name = azurerm_private_dns_zone.sa_file_dns.name
-  virtual_network_id    = var.vnet_id
-  resource_group_name   = var.resource_group_name
-}
-
-### Web
-resource "azurerm_private_dns_zone_virtual_network_link" "sa_web_vnetlink" {
-  name                  = "${var.name}sawebvnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.sa_web_dns.name
-  virtual_network_id    = var.vnet_id
-  resource_group_name   = var.resource_group_name
-}
-
-### Queue
-resource "azurerm_private_dns_zone_virtual_network_link" "sa_queue_vnetlink" {
-  name                  = "${var.name}saqueuevnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.sa_queue_dns.name
-  virtual_network_id    = var.vnet_id
-  resource_group_name   = var.resource_group_name
-}
-
-### Table
-resource "azurerm_private_dns_zone_virtual_network_link" "sa_table_vnetlink" {
-  name                  = "${var.name}satablevnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.sa_table_dns.name
   virtual_network_id    = var.vnet_id
   resource_group_name   = var.resource_group_name
 }
@@ -354,73 +309,7 @@ resource "azurerm_private_endpoint" "sa_file_pe" {
 
   private_dns_zone_group {
     name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
-  }
-}
-
-# Private endpoint (web)
-resource "azurerm_private_endpoint" "sa_web_pe" {
-  name                          = "${var.name}saweb-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}saweb-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}saweb-private-service-connection"
-    private_connection_resource_id = azurerm_storage_account.sonarqube.id
-    subresource_names              = ["web"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
-  }
-}
-
-# Private endpoint (queue)
-resource "azurerm_private_endpoint" "sa_queue_pe" {
-  name                          = "${var.name}saqueue-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}saqueue-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}saqueue-private-service-connection"
-    private_connection_resource_id = azurerm_storage_account.sonarqube.id
-    subresource_names              = ["queue"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
-  }
-}
-
-# Private endpoint (table)
-resource "azurerm_private_endpoint" "sa_table_pe" {
-  name                          = "${var.name}satable-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}satable-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}satable-private-service-connection"
-    private_connection_resource_id = azurerm_storage_account.sonarqube.id
-    subresource_names              = ["table"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
+    private_dns_zone_ids = [azurerm_private_dns_zone.sa_file_dns.id]
   }
 }
 
@@ -483,27 +372,27 @@ resource "azurerm_container_group" "sonarqube" {
       SONAR_JDBC_PASSWORD = azurerm_key_vault_secret.sonarqube_db_password.value
       SONAR_JDBC_URL      = format("jdbc:postgresql://%s:5432/%s?sslmode=require", azurerm_postgresql_flexible_server.sonarqube.fqdn, azurerm_postgresql_flexible_server_database.sonarqube.name)
     }
-    # volume {
-    #   name                 = "sonar-data"
-    #   mount_path           = "/opt/sonarqube/data"
-    #   storage_account_name = azurerm_storage_account.sonarqube.name
-    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_data.name
-    # }
-    # volume {
-    #   name                 = "sonar-extensions"
-    #   mount_path           = "/opt/sonarqube/extensions"
-    #   storage_account_name = azurerm_storage_account.sonarqube.name
-    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_extensions.name
-    # }
-    # volume {
-    #   name                 = "sonar-logs"
-    #   mount_path           = "/opt/sonarqube/logs"
-    #   storage_account_name = azurerm_storage_account.sonarqube.name
-    #   storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
-    #   share_name           = azurerm_storage_share.sonarqube_logs.name
-    # }
+    volume {
+      name                 = "sonar-data"
+      mount_path           = "/opt/sonarqube/data"
+      storage_account_name = azurerm_storage_account.sonarqube.name
+      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+      share_name           = azurerm_storage_share.sonarqube_data.name
+    }
+    volume {
+      name                 = "sonar-extensions"
+      mount_path           = "/opt/sonarqube/extensions"
+      storage_account_name = azurerm_storage_account.sonarqube.name
+      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+      share_name           = azurerm_storage_share.sonarqube_extensions.name
+    }
+    volume {
+      name                 = "sonar-logs"
+      mount_path           = "/opt/sonarqube/logs"
+      storage_account_name = azurerm_storage_account.sonarqube.name
+      storage_account_key  = azurerm_storage_account.sonarqube.primary_access_key
+      share_name           = azurerm_storage_share.sonarqube_logs.name
+    }
   }
 
   identity {
