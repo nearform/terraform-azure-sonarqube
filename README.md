@@ -6,14 +6,23 @@ A Terraform module for deploying SonarQube on Azure as a containerized service. 
 
 This Terraform module deploys a **SonarQube container** in **Azure Container Instances (ACI)** with **private networking**. It includes the following components:
 
-- **Azure Container Instances (ACI)** – Runs the SonarQube container within a secure environment.
+- **Azure Container Instances (ACI)** – Runs the SonarQube container within a secure and scalable environment.
 - **Azure Database for PostgreSQL Flexible Server** – Provides a managed PostgreSQL database for SonarQube.
-- **Azure Key Vault** – Stores sensitive information such as database credentials securely.
+- **Azure Key Vault** – Securely stores sensitive information such as database credentials.
 - **Azure Application Gateway (AppGW)** – Acts as the entry point for external access while keeping all internal resources private.
-- **Azure Storage Account** – Provides persistent storage for SonarQube data.
-- **Private Deployment** – The entire infrastructure is **deployed in a private network**, with external access routed exclusively through the **Application Gateway**.
+- **Azure Storage Account** – Ensures persistent storage for SonarQube data, including logs, extensions, and cache.
+- **Azure Log Analytics Workspace** – Centralizes log ingestion for streamlined monitoring and troubleshooting.
 
-This setup ensures a **cost-effective, reliable, and secure** SonarQube deployment on Azure.
+This setup ensures a **cost-effective, reliable, and secure** SonarQube deployment on Azure while providing **enhanced observability** through **automated log ingestion**.
+
+## Highlights
+
+- **Self-contained deployment** – No external dependencies beyond basic networking.
+- **Private Deployment** – The entire infrastructure is **deployed in a private network**, with external access routed exclusively through the **Application Gateway**.
+- **Persistence** – Three file shares are used to persist data, extensions, and logs. This improves **internal Elasticsearch cache performance**, allows **easy integration of third-party plugins**, and **prevents logs** from consuming container space.
+- **Automated Logging** – Logs are ingested automatically into **Azure Log Analytics** for easy troubleshooting and monitoring.
+- **Dedicated Container Registry** – Deploys and uses its **own container registry** to bypass Docker Hub’s pull rate limits.
+- **Automated Image Handling** – The module automatically pulls the specified SonarQube image tag from **Docker Hub**, pushes it to the **private container registry**, and deploys it securely.
 
 ## Requirements
 
@@ -24,28 +33,29 @@ This setup ensures a **cost-effective, reliable, and secure** SonarQube deployme
 
 ## Inputs
 
-| Name                          | Description                                           | Type           | Default                | Required |
-| ----------------------------- | ----------------------------------------------------- | -------------- | ---------------------- | -------- |
-| `name`                        | Name to be used on all resources as an identifier     | `string`       | `"sonarqube"`          | no       |
-| `tags`                        | A map of tags to add to all resources                 | `map(string)`  | `{}`                   | no       |
-| `location`                    | Azure region where resources will be deployed         | `string`       | `"northeurope"`        | no       |
-| `resource_group_name`         | The name of the Azure resource group                  | `string`       | N/A                    | yes      |
-| `admins_allowed_ips`          | Mapping of admin users to their allowed public IPs    | `map(string)`  | `{}`                   | no       |
-| `vnet_id`                     | ID of the Virtual Network                             | `string`       | N/A                    | yes      |
-| `subnet_private_endpoints_id` | The ID of the subnet used for private endpoints       | `string`       | N/A                    | yes      |
-| `subnet_pgsql_id`             | The ID of the subnet used for the PostgreSQL database | `string`       | N/A                    | yes      |
-| `subnet_appgw_id`             | The ID of the subnet used for the Application Gateway | `string`       | N/A                    | yes      |
-| `keyvault`                    | Configuration for Azure Key Vault                     | `object`       | See below              | no       |
-| `kv_admins`                   | List of user IDs with admin privileges over Key Vault | `list(string)` | `[]`                   | no       |
-| `storage_account`             | Configuration for the Azure Storage Account           | `object`       | See below              | no       |
-| `sonar_db_server`             | The name of the SonarQube database server             | `string`       | `"sonardbserver"`      | no       |
-| `sonar_db_instance_class`     | The instance class for the SonarQube database         | `string`       | `"GP_Standard_D2s_v3"` | no       |
-| `sonar_db_storage_type`       | The storage type for the SonarQube database           | `string`       | `"P10"`                | no       |
-| `sonar_db_name`               | The name of the SonarQube database                    | `string`       | `"sonar"`              | no       |
-| `sonar_db_user`               | The username for the SonarQube database               | `string`       | `"sonar"`              | no       |
-| `sonar_port`                  | The port on which SonarQube will run                  | `number`       | `9000`                 | no       |
-| `sonar_container_name`        | The name of the SonarQube container                   | `string`       | `"sonarqube"`          | no       |
-| `sonar_image_tag`             | The Docker Hub tag of the SonarQube image to deploy   | `string`       | `"community"`          | no       |
+| Name                          | Description                                                  | Type           | Default                | Required |
+| ----------------------------- | ------------------------------------------------------------ | -------------- | ---------------------- | -------- |
+| `name`                        | Name to be used on all resources as an identifier.           | `string`       | `"sonarqube"`          | no       |
+| `tags`                        | A map of tags for resource organization and cost management. | `map(string)`  | `{}`                   | no       |
+| `location`                    | Azure region where resources will be deployed.               | `string`       | `"northeurope"`        | no       |
+| `resource_group_name`         | The name of the Azure resource group.                        | `string`       | N/A                    | yes      |
+| `admins_allowed_ips`          | Mapping of admin users to their allowed public IPs.          | `map(string)`  | `{}`                   | no       |
+| `vnet_id`                     | ID of the Virtual Network.                                   | `string`       | N/A                    | yes      |
+| `subnet_private_endpoints_id` | The ID of the subnet used for private endpoints.             | `string`       | N/A                    | yes      |
+| `subnet_pgsql_id`             | The ID of the subnet used for the PostgreSQL database.       | `string`       | N/A                    | yes      |
+| `subnet_appgw_id`             | The ID of the subnet used for the Application Gateway.       | `string`       | N/A                    | yes      |
+| `subnet_aci_id`               | The ID of the subnet used for the ACI.                       | `string`       | N/A                    | yes      |
+| `keyvault`                    | Configuration for Azure Key Vault.                           | `object`       | See below              | no       |
+| `kv_admins`                   | List of user IDs with admin privileges over Key Vault.       | `list(string)` | `[]`                   | no       |
+| `storage_account`             | Configuration for the Azure Storage Account.                 | `object`       | See below              | no       |
+| `sonar_db_server`             | The name of the SonarQube database server.                   | `string`       | `"sonardbserver"`      | no       |
+| `sonar_db_instance_class`     | The instance class for the SonarQube database.               | `string`       | `"GP_Standard_D2s_v3"` | no       |
+| `sonar_db_storage_type`       | The storage type for the SonarQube database.                 | `string`       | `"P10"`                | no       |
+| `sonar_db_name`               | The name of the SonarQube database.                          | `string`       | `"sonar"`              | no       |
+| `sonar_db_user`               | The username for the SonarQube database.                     | `string`       | `"sonar"`              | no       |
+| `sonar_port`                  | The port on which SonarQube will run.                        | `number`       | `9000`                 | no       |
+| `sonar_container_name`        | The name of the SonarQube container.                         | `string`       | `"sonarqube"`          | no       |
+| `sonar_image_tag`             | The Docker Hub tag of the SonarQube image to deploy.         | `string`       | `"community"`          | no       |
 
 ### Default Configuration for Key Vault
 
@@ -104,12 +114,47 @@ terraform apply -var-file="terraform.tfvars"
 
 This ensures that the correct administrators have access to key resources while maintaining best security practices.
 
-
 ## Outputs
 
-| Name         | Description                                                                 |
-| ------------ | --------------------------------------------------------------------------- |
-| `appgw_fqdn` | The fully qualified domain name (FQDN) of the Application Gateway public IP |
+| Name       | Description                                                 | Value                                      |
+| ---------- | ----------------------------------------------------------- | ------------------------------------------ |
+| `aci_id`   | The ID of the Azure Container Instance hosting SonarQube.   | `azurerm_container_group.sonarqube.id`    |
+| `aci_name` | The name of the Azure Container Instance hosting SonarQube. | `azurerm_container_group.sonarqube.name`  |
+| `appgw_id` | The ID of the Application Gateway managing SonarQube traffic. | `azurerm_public_ip.appgw.id`              |
+| `appgw_fqdn` | The fully qualified domain name (FQDN) of the Application Gateway public IP. | `azurerm_public_ip.appgw.fqdn` |
+
+## Enabling HTTPS Support
+
+This Terraform module does **not** include HTTPS (TLS) support in the Azure Application Gateway (AppGW) by default. While the initial implementation supported TLS termination, we decided to **leave HTTPS configuration to the user** for the following reasons:
+
+- **DNS & Certificate Complexity**: Automating HTTPS across all use cases is challenging. Different organizations use various **DNS providers, certificate authorities (CAs), and domain types**, some of which (e.g., `.ie` domains) are not natively supported in certain cloud environments.  
+- **Flexibility for Users**: HTTPS implementation varies based on **security policies, internal PKI infrastructure, and certificate lifecycle management**. Providing a one-size-fits-all approach could introduce unnecessary constraints.  
+- **User Control**: Delegating TLS configuration allows users to integrate with **existing certificate automation workflows** and manage domain-specific requirements independently.  
+
+### How to Enable HTTPS Manually
+
+To introduce HTTPS support for your SonarQube deployment, follow these steps:
+
+1. **Assign a Custom Domain**  
+   - Ensure that your **Azure Application Gateway (AppGW)** is associated with a **custom domain name** (e.g., `sonarqube.example.com`).  
+   - Update your **DNS provider** to point the domain to the **AppGW public IP**.  
+
+2. **Generate or Import a TLS Certificate**  
+   - If using **a public CA**, obtain an SSL certificate for your domain.  
+   - If using **Azure Key Vault**, store and manage the certificate securely.  
+   - Alternatively, you can generate a **self-signed certificate** for internal use.  
+
+3. **Configure HTTPS Listener on Application Gateway**  
+   - Update the **Application Gateway configuration** to:  
+     - Create a **new HTTPS listener** on port **443**.  
+     - Attach the generated/imported **TLS certificate**.  
+     - Ensure that backend HTTP traffic is properly forwarded.  
+
+4. **Update Firewall and Security Rules**  
+   - Allow inbound traffic on **port 443**.  
+   - Restrict access to only necessary IP ranges or networks (if required).  
+
+By following these steps, users can enable HTTPS while maintaining flexibility over their **certificate management, domain setup, and security policies**.
 
 ## Examples
 
@@ -138,8 +183,8 @@ module "sonarqube" {
 
   # SonarQube Configuration
   sonar_db_server          = "sonardbserver"
-  sonar_db_instance_class  = "Standard_D2s_v3"
-  sonar_db_storage_type    = "Premium_LRS"
+  sonar_db_instance_class  = "GP_Standard_D2ds_v4"
+  sonar_db_storage_type    = "P20"
   sonar_db_name            = "sonar"
   sonar_db_user            = "sonar"
   sonar_port               = 9000
