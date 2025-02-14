@@ -568,7 +568,7 @@ resource "azurerm_key_vault_access_policy" "kv_policy_appgw" {
 }
 
 ################################################################################
-# AppInsights Workspace
+# Log Analytics Workspace
 ################################################################################
 resource "azurerm_log_analytics_workspace" "sonarqube" {
   name                = "${var.name}${random_string.resource_name_suffix.result}"
