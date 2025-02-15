@@ -193,7 +193,7 @@ provider "azurerm" {
 }
 
 module "sonarqube" {
-  source                      = "../"
+  source                      = "../../"
   name                        = local.name
   sonar_image_tag             = local.sonar_image_tag
   sonar_port                  = local.sonar_port
