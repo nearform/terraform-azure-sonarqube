@@ -480,8 +480,8 @@ resource "azurerm_application_gateway" "sonarqube" {
   firewall_policy_id  = null
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = "Basic"
+    tier     = "Basic"
     capacity = 1
   }
 
