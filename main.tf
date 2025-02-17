@@ -20,15 +20,7 @@ resource "azurerm_private_dns_zone" "pgsql_server_dns" {
   tags                = var.tags
 }
 
-## Storage Account
-### Blob
-resource "azurerm_private_dns_zone" "sa_blob_dns" {
-  name                = "privatelink.blob.core.windows.net"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
-### File
+## Storage Account (File)
 resource "azurerm_private_dns_zone" "sa_file_dns" {
   name                = "privatelink.file.core.windows.net"
   resource_group_name = var.resource_group_name
@@ -53,16 +45,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "pgsql_server_vnetlink"
   resource_group_name   = var.resource_group_name
 }
 
-## Storage Account
-### Blob
-resource "azurerm_private_dns_zone_virtual_network_link" "sa_blob_vnetlink" {
-  name                  = "${var.name}sablobvnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.sa_blob_dns.name
-  virtual_network_id    = var.vnet_id
-  resource_group_name   = var.resource_group_name
-}
-
-### File
+## Storage Account (File)
 resource "azurerm_private_dns_zone_virtual_network_link" "sa_file_vnetlink" {
   name                  = "${var.name}safilevnetlink"
   private_dns_zone_name = azurerm_private_dns_zone.sa_file_dns.name
@@ -278,28 +261,6 @@ resource "azurerm_storage_account" "sonarqube" {
     container_delete_retention_policy {
       days = var.storage_account.container_soft_delete_period
     }
-  }
-}
-
-# Private endpoint (blob)
-resource "azurerm_private_endpoint" "sa_blob_pe" {
-  name                          = "${var.name}sablob-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}sablob-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}sablob-private-service-connection"
-    private_connection_resource_id = azurerm_storage_account.sonarqube.id
-    subresource_names              = ["blob"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
   }
 }
 
