@@ -85,7 +85,7 @@ resource "azurerm_container_registry" "sonarqube" {
   name                          = "${var.name}${random_string.resource_name_suffix.result}"
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  sku                           = "Standard"
+  sku                           = "Basic"
   admin_enabled                 = true
   public_network_access_enabled = true
   tags                          = var.tags
