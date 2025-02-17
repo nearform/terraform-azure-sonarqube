@@ -1,6 +1,9 @@
 name: Notify release
 
 on:
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
   schedule:
     - cron: 30 8 * * *
