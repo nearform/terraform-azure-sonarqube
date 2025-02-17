@@ -117,13 +117,13 @@ variable "sonar_db_server" {
 variable "sonar_db_instance_class" {
   description = "The database instance class used for SonarQube."
   type        = string
-  default     = "GP_Standard_D2s_v3"
+  default     = "B_Standard_B1ms"
 }
 
 variable "sonar_db_storage_type" {
   description = "The storage type used for the SonarQube database server."
   type        = string
-  default     = "P10"
+  default     = "P4"
 }
 
 variable "sonar_db_name" {

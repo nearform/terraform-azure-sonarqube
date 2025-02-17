@@ -20,15 +20,7 @@ resource "azurerm_private_dns_zone" "pgsql_server_dns" {
   tags                = var.tags
 }
 
-## Storage Account
-### Blob
-resource "azurerm_private_dns_zone" "sa_blob_dns" {
-  name                = "privatelink.blob.core.windows.net"
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-}
-
-### File
+## Storage Account (File)
 resource "azurerm_private_dns_zone" "sa_file_dns" {
   name                = "privatelink.file.core.windows.net"
   resource_group_name = var.resource_group_name
@@ -53,16 +45,7 @@ resource "azurerm_private_dns_zone_virtual_network_link" "pgsql_server_vnetlink"
   resource_group_name   = var.resource_group_name
 }
 
-## Storage Account
-### Blob
-resource "azurerm_private_dns_zone_virtual_network_link" "sa_blob_vnetlink" {
-  name                  = "${var.name}sablobvnetlink"
-  private_dns_zone_name = azurerm_private_dns_zone.sa_blob_dns.name
-  virtual_network_id    = var.vnet_id
-  resource_group_name   = var.resource_group_name
-}
-
-### File
+## Storage Account (File)
 resource "azurerm_private_dns_zone_virtual_network_link" "sa_file_vnetlink" {
   name                  = "${var.name}safilevnetlink"
   private_dns_zone_name = azurerm_private_dns_zone.sa_file_dns.name
@@ -85,7 +68,7 @@ resource "azurerm_container_registry" "sonarqube" {
   name                          = "${var.name}${random_string.resource_name_suffix.result}"
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  sku                           = "Standard"
+  sku                           = "Basic"
   admin_enabled                 = true
   public_network_access_enabled = true
   tags                          = var.tags
@@ -281,28 +264,6 @@ resource "azurerm_storage_account" "sonarqube" {
   }
 }
 
-# Private endpoint (blob)
-resource "azurerm_private_endpoint" "sa_blob_pe" {
-  name                          = "${var.name}sablob-pe"
-  resource_group_name           = var.resource_group_name
-  location                      = var.location
-  subnet_id                     = var.subnet_private_endpoints_id
-  custom_network_interface_name = "${var.name}sablob-pe-nic"
-  tags                          = var.tags
-
-  private_service_connection {
-    name                           = "${var.name}sablob-private-service-connection"
-    private_connection_resource_id = azurerm_storage_account.sonarqube.id
-    subresource_names              = ["blob"]
-    is_manual_connection           = false
-  }
-
-  private_dns_zone_group {
-    name                 = "default"
-    private_dns_zone_ids = [azurerm_private_dns_zone.sa_blob_dns.id]
-  }
-}
-
 # Private endpoint (file)
 resource "azurerm_private_endpoint" "sa_file_pe" {
   name                          = "${var.name}safile-pe"
@@ -480,8 +441,8 @@ resource "azurerm_application_gateway" "sonarqube" {
   firewall_policy_id  = null
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
+    name     = "Basic"
+    tier     = "Basic"
     capacity = 1
   }
 
