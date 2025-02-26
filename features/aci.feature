@@ -11,12 +11,12 @@ Feature: Test Azure Container Registry
         And its value must be true
 
     Scenario: Ensure ACI is protected with a lock
-        Given I have azurerm_management_lock defined
+        Given I have azurerm_management_lock sonarqube_acr defined
         Then it must contain scope
         And its value must be azurerm_container_registry.sonarqube.id
 
     Scenario: Ensure ACI is protected with a lock to avoid deletion
-        Given I have azurerm_management_lock defined
+        Given I have azurerm_management_lock sonarqube_acr defined
         Then it must contain lock_level
         And its value must be CanNotDelete
 
