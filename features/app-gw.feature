@@ -6,7 +6,7 @@ Feature: Test Azure App gateway
         Then its value must be true
 
     Scenario: Ensure the Azure app gateway is deployed with a basic sku
-        Given I have azurerm_postgresql_flexible_server defined
+        Given I have azurerm_application_gateway defined
         Then it must contain sku
         And it must have tier
         Then its value must be Basic
