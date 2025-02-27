@@ -10,4 +10,3 @@ Feature: Test Azure Postgres
         Then it must contain authentication
         And it must have password_auth_enabled
         Then its value must be true
-

@@ -12,5 +12,3 @@ Feature: Test Azure storage account
         And it must have virtual_network_subnet_ids
         Then its value must contain var.subnet_aci_id
         Then its value must contain var.subnet_private_endpoints_id
-
-

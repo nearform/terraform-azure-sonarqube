@@ -5,4 +5,3 @@ Feature: Test Azure Key Vault
         Then it must contain network_acls
         And it must have default_action
         Then its value must be Deny
-

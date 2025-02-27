@@ -9,9 +9,3 @@ Feature: Test Azure Container Registry
         Given I have azurerm_container_registry defined
         Then it must contain admin_enabled
         And its value must be true
-
-
-
-
-
-
