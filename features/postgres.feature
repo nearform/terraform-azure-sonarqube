@@ -11,12 +11,8 @@ Feature: Test Azure Postgres
         And it must have password_auth_enabled
         Then its value must be true
 
-    Scenario: Ensure Postgres is protected with a lock
-        Given I have azurerm_management_lock sonarqube_pgsql defined
-        Then it must contain scope
-        And its value must be azurerm_container_registry.sonarqube.id
-
     Scenario: Ensure Postgres is protected with a lock to avoid deletion
-        Given I have azurerm_management_lock sonarqube_pgsql defined
+        Given I have azurerm_management_lock defined
+        When its scope is azurerm_postgresql_flexible_server.sonarqube.id
         Then it must contain lock_level
         And its value must be CanNotDelete
