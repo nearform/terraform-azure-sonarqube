@@ -8,7 +8,7 @@ terraform {
     }
     random = {
       source  = "hashicorp/random"
-      version = ">= 3.6, < 3.7"
+      version = ">= 3.6, < 3.8"
     }
     null = {
       source  = "hashicorp/null"
