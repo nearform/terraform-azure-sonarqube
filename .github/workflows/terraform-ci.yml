@@ -28,7 +28,7 @@ jobs:
       TF_WORK_DIR: ${{ github.workspace }}/examples/default
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Login to Azure 🔐
         uses: Azure/login@v3.0.0
