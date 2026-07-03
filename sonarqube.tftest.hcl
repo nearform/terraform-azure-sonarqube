@@ -15,6 +15,14 @@ override_data {
   override_during = plan
 }
 
+override_data {
+  target = data.azurerm_subscription.current
+  values = {
+    subscription_id = "00000000-0000-0000-0000-000000000000"
+  }
+  override_during = plan
+}
+
 variables {
   sonar_image_tag             = "10.7.0-community"
   resource_group_name         = "rg-sonarqube-test"
