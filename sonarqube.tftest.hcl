@@ -39,6 +39,11 @@ run "plan_and_verify_module" {
     error_message = "Container registry admin access must be enabled."
   }
 
+  assert {
+    condition     = azurerm_management_lock.sonarqube_acr.lock_level == "CanNotDelete"
+    error_message = "Container registry must have a CanNotDelete management lock."
+  }
+
   # PostgreSQL — features/postgres.feature
   assert {
     condition     = azurerm_postgresql_flexible_server.sonarqube.public_network_access_enabled == false
@@ -48,6 +53,11 @@ run "plan_and_verify_module" {
   assert {
     condition     = azurerm_postgresql_flexible_server.sonarqube.authentication[0].password_auth_enabled == true
     error_message = "PostgreSQL server must have password authentication enabled."
+  }
+
+  assert {
+    condition     = azurerm_management_lock.sonarqube_pgsql.lock_level == "CanNotDelete"
+    error_message = "PostgreSQL server must have a CanNotDelete management lock."
   }
 
   # Application Gateway — features/app-gw.feature
@@ -64,6 +74,11 @@ run "plan_and_verify_module" {
   assert {
     condition     = azurerm_application_gateway.sonarqube.identity[0].type == "UserAssigned"
     error_message = "Application Gateway must use a user-assigned managed identity."
+  }
+
+  assert {
+    condition     = azurerm_management_lock.sonarqube_appgw.lock_level == "CanNotDelete"
+    error_message = "Application Gateway must have a CanNotDelete management lock."
   }
 
   # Key Vault — features/kv.feature
