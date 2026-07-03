@@ -18,7 +18,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      issues: write
       checks: write
       pull-requests: write
     env:
@@ -101,7 +100,7 @@ jobs:
               '',
               '</details>',
               '',
-              `*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Example: \`${{ env.TF_EXAMPLE_DIR }}\`, Tests: \`${{ env.TF_MODULE_DIR }}/sonarqube.tftest.hcl\`, Workflow: \`${{ github.workflow }}\`*`,
+              `*Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Example: \`${{ env.TF_EXAMPLE_DIR }}\`, Tests: \`${{ env.TF_MODULE_DIR }}/*.tftest.hcl\`, Workflow: \`${{ github.workflow }}\`*`,
             ].join('\n')
 
             // 3. If we have a comment, update it, otherwise create a new one
